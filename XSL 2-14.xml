@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="UTF-8" indent="yes"/>
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <meta charset="UTF-8"/>
+                <title>Zespoły i Pracownicy</title>
+            </head>
+            <body>
+                <h1>ZESPOŁY:</h1>
+                <!-- Zadanie 6b, 9:  -->
+                <ol>
+                    <xsl:apply-templates select="ZESPOLY/ROW" mode="list"/>
+                </ol>
+
+                <!-- Zadanie 7, 8, 9, 11, 12, 13, 14: Informacje szczegółowe o zespołach -->
+                <xsl:apply-templates select="ZESPOLY/ROW" mode="details"/>
+            </body>
+        </html>
+    </xsl:template>
+
+    <!-- Zadanie 6b, 9: Pozycja na liście linków -->
+    <xsl:template match="ROW" mode="list">
+        <li>
+            <a href="#{ID_ZESP}"><xsl:value-of select="NAZWA"/></a>
+        </li>
+    </xsl:template>
+
+    <!-- Zadanie 7, 8, 9, 13, 14: Szczegóły pojedynczego zespołu -->
+    <xsl:template match="ROW" mode="details">
+        <h2 id="{ID_ZESP}">
+            NAZWA: <xsl:value-of select="NAZWA"/><br/>
+            ADRES: <xsl:value-of select="ADRES"/>
+        </h2>
+
+        <!-- Zadanie 14: Tabela wyświetlana tylko wtedy, gdy zespół posiada pracowników -->
+        <xsl:if test="count(PRACOWNICY/ROW) > 0">
+            <table border="1">
+                <tr>
+                    <th>Nazwisko</th>
+                    <th>Etat</th>
+                    <th>Zatrudniony</th>
+                    <th>Placa pod.</th>
+                    <th>Szef</th>
+                </tr>
+                <!-- Zadanie 10: Sortowanie pracowników alfabetycznie wg nazwiska -->
+                <xsl:apply-templates select="PRACOWNICY/ROW">
+                    <xsl:sort select="NAZWISKO"/>
+                </xsl:apply-templates>
+            </table>
+        </xsl:if>
+
+        <!-- Zadanie 13: Informacja o liczbie pracowników pod tabelą/nagłówkiem -->
+        <p>Liczba pracowników: <xsl:value-of select="count(PRACOWNICY/ROW)"/></p>
+    </xsl:template>
+
+    <!-- Zadania 8, 11, 12: Wiersz tabeli z danymi pracownika -->
+    <xsl:template match="PRACOWNICY/ROW">
+        <tr>
+            <td><xsl:value-of select="NAZWISKO"/></td>
+            <td><xsl:value-of select="ETAT"/></td>
+            <td><xsl:value-of select="ZATRUDNIONY"/></td>
+            <td><xsl:value-of select="PLACA_POD"/></td>
+            <td>
+                <!-- Zadanie 11, 12: Zamiana ID_SZEFA na nazwisko lub 'brak' -->
+                <xsl:choose>
+                    <xsl:when test="ID_SZEFA and normalize-space(ID_SZEFA) != ''">
+                        <xsl:variable name="szefId" select="ID_SZEFA"/>
+                        <xsl:value-of select="//PRACOWNICY/ROW[ID_PRAC = $szefId]/NAZWISKO"/>
+                    </xsl:when>
+                    <xsl:otherwise>brak</xsl:otherwise>
+                </xsl:choose>
+            </td>
+        </tr>
+    </xsl:template>
+</xsl:stylesheet>
